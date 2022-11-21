@@ -202,10 +202,13 @@ void setup()
   file.close();
 }
 unsigned long intervalRead = 0;
+int i = 1;
 void loop()
 {
-  if (millis() - intervalRead >= 250)
+  if (millis() - intervalRead >= 500)
   {
+    Serial.println("Millis pertama = " + String(i));
+    i++;
     Serial.println("Firmware Current Version :" + currentFirmVers);
     Serial.println("FS Current Version :" + currentFSVers);
     DynamicJsonDocument doc(64);
@@ -239,8 +242,8 @@ void loop()
         UpdateFirm();
         // currentFirmVers = docVer["FirmVers"].as<String>();
       }
-      readFile("/LampState.json", "r");
-      readFile("/text.txt", "r");
+      // readFile("/LampState.json", "r");
+      // readFile("/text.txt", "r");
       // readFile("/index.html", "r");
       // readFile("/script.js", "r");
       // readFile("/style.css", "r");

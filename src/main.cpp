@@ -200,61 +200,57 @@ void setup()
     Serial.println("FS Current Version :" + docVer["FSVers"].as<String>());
   }
   file.close();
-
-  // UpdateFS();       // jalankan update kalau pada data json current FS version berbeda dari sebelumnya
-  // readFile("/LampState.json", "r");
-  // readFile("/text.txt", "r");
-  // readFile("/index.html", "r");
-  // readFile("/script.js", "r");
-  // readFile("/style.css", "r");
 }
+unsigned long intervalRead = 0;
 void loop()
 {
-  Serial.println("Firmware Current Version :" + currentFirmVers);
-  Serial.println("FS Current Version :" + currentFSVers);
-  DynamicJsonDocument doc(64);
-  HTTPClient http;
-  Serial.print("[HTTP] begin...\n");
-  // configure server and url
-  http.useHTTP10(true);
-  http.begin(urlJson);
-  // http.begin("192.168.1.12", 80, "/test.html");
-  Serial.print("[HTTP] GET...\n");
-  // start connection and send HTTP header
-  int httpCode = http.GET();
-  if (httpCode > 0)
+  if (millis() - intervalRead >= 250)
   {
-    deserializeJson(doc, http.getStream());
-    Serial.print("FS Version : ");
-    Serial.println(doc["FSVers"].as<String>());
-    Serial.print("Firmware Version : ");
-    Serial.println(doc["FirmVers"].as<String>());
-    if (doc["FSVers"].as<String>() != currentFSVers)
+    Serial.println("Firmware Current Version :" + currentFirmVers);
+    Serial.println("FS Current Version :" + currentFSVers);
+    DynamicJsonDocument doc(64);
+    HTTPClient http;
+    Serial.print("[HTTP] begin...\n");
+    // configure server and url
+    http.useHTTP10(true);
+    http.begin(urlJson);
+    // http.begin("192.168.1.12", 80, "/test.html");
+    Serial.print("[HTTP] GET...\n");
+    // start connection and send HTTP header
+    int httpCode = http.GET();
+    if (httpCode > 0)
     {
-      currentFSVers = doc["FSVers"].as<String>();
-      Serial.println("Memulai Update Versi baru dari Little FS");
-      UpdateFS();
-      // currentFSVers = docVer["FSVers"].as<String>();
+      deserializeJson(doc, http.getStream());
+      Serial.print("FS Version : ");
+      Serial.println(doc["FSVers"].as<String>());
+      Serial.print("Firmware Version : ");
+      Serial.println(doc["FirmVers"].as<String>());
+      if (doc["FSVers"].as<String>() != currentFSVers)
+      {
+        currentFSVers = doc["FSVers"].as<String>();
+        Serial.println("Memulai Update Versi baru dari Little FS");
+        UpdateFS();
+        // currentFSVers = docVer["FSVers"].as<String>();
+      }
+      else if (doc["FirmVers"].as<String>() != currentFirmVers)
+      {
+        currentFirmVers = doc["FirmVers"].as<String>();
+        Serial.println("Memulai Update Versi baru Firmware");
+        UpdateFirm();
+        // currentFirmVers = docVer["FirmVers"].as<String>();
+      }
+      readFile("/LampState.json", "r");
+      readFile("/text.txt", "r");
+      // readFile("/index.html", "r");
+      // readFile("/script.js", "r");
+      // readFile("/style.css", "r");
+      readFile("/CurrentVersion.json", "r");
     }
-    else if (doc["FirmVers"].as<String>() != currentFirmVers)
+    else
     {
-      currentFirmVers = doc["FirmVers"].as<String>();
-      Serial.println("Memulai Update Versi baru Firmware");
-      UpdateFirm();
-      // currentFirmVers = docVer["FirmVers"].as<String>();
+      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
-    readFile("/LampState.json", "r");
-    readFile("/text.txt", "r");
-    // readFile("/index.html", "r");
-    // readFile("/script.js", "r");
-    // readFile("/style.css", "r");
-    readFile("/CurrentVersion.json", "r");
+    http.end();
+    intervalRead = millis();
   }
-  else
-  {
-    Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-  }
-  http.end();
-
-  delay(250);
 }

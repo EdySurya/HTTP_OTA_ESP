@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FirmWare Dasar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous" />
+</head>
+
+<body>
+    <div class="topnav">
+        <h1>
+            ESP WEB SERVER - FirmWare Dasar Update firmware.bin dan littlefs.bin
+        </h1>
+    </div>
+    <div class="content">
+        <div class="card-grid">
+            <div class="card">
+                <form action="/submit" method="get">
+                    <label for="UrlFS">URL littleFS:</label><br />
+                    <input type="text" id="UrlFS" name="UrlFS" value="" /><br />
+                    <label for="UrlFirm">URL FirmWare:</label><br />
+                    <input type="text" id="UrlFirm" name="UrlFirm" value="" /><br />
+                    <label for="WiFiSSID">WiFi SSID:</label><br />
+                    <input type="text" id="WiFiSSID" name="WiFiSSID" value="" /><br />
+                    <label for="WiFiPass">WiFi Password:</label><br />
+                    <input type="text" id="WiFiPass" name="WiFiPass" value="" /><br />
+                    <input type="submit" value="SUBMIT" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="/script.js"></script>
+</body>
+
+</html>

@@ -1,16 +1,14 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <Update.h>
-#include <config/mainStruct.hpp>
+#include <service/FirmwareDasar.hpp>
 
-const char *urlFS = "https://raw.githubusercontent.com/EdySurya/HTTP_OTA_ESP/LittleFS/src/Update/littlefs.bin";
-const char *urlFirm = "https://raw.githubusercontent.com/EdySurya/HTTP_OTA_ESP/LittleFS/src/Update/firmware.bin";
 FS_Struct my_Struct;
 void UpdateFS()
 {
     HTTPClient http;
     Serial.print("[HTTP] begin...\n");
-    http.begin(urlFS);
+    http.begin(FirmDasar.urlFS);
     // http.begin("192.168.1.12", 80, "/test.html");
     Serial.print("[HTTP] GET...\n");
     my_Struct.httpCode = http.GET();
@@ -60,7 +58,7 @@ void UpdateFirm()
 {
     HTTPClient http;
     Serial.print("[HTTP] begin...\n");
-    http.begin(urlFirm);
+    http.begin(FirmDasar.urlFirm);
     Serial.print("[HTTP] GET...\n");
     my_Struct.httpCode = http.GET();
     if (my_Struct.httpCode > 0)

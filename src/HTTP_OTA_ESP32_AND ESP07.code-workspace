@@ -1,0 +1,12 @@
+{
+    "folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "HTTP_OTA_ESP07",
+			"path": "../../HTTP_OTA_ESP07"
+		}
+	],
+    "settings": {}
+}

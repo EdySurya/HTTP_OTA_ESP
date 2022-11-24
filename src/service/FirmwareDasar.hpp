@@ -16,36 +16,6 @@ void initLittleFS()
     }
     Serial.println("SPIFFS mounted successfully");
 }
-
-void readFile(const char *path, const char *mode)
-{
-    File file = LittleFS.open(path, mode);
-    while (file.available())
-    {
-        Serial.write(file.read());
-    }
-    Serial.println("");
-    file.close();
-}
-
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-             void *arg, uint8_t *data, size_t len)
-{
-    switch (type)
-    {
-    case WS_EVT_CONNECT:
-        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-        break;
-    case WS_EVT_DISCONNECT:
-        Serial.printf("WebSocket client #%u disconnected\n", client->id());
-        break;
-    case WS_EVT_DATA:
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-        break;
-    }
-}
-
 void notFound(AsyncWebServerRequest *request)
 {
     request->send(404, "text/plain", "Not found");
@@ -62,15 +32,15 @@ void serverHandle()
     server.on("/submit", HTTP_GET, [](AsyncWebServerRequest *request)
               {
     String message;
-    FirmDasar.urlFS = request->getParam(FirmDasar.Param_UrlFS)->value().c_str();
-    FirmDasar.urlFirm = request->getParam(FirmDasar.Param_UrlFirm)->value().c_str();
-    FirmDasar.ssid = request->getParam(FirmDasar.Param_WiFiSSID)->value().c_str();
-    FirmDasar.pass = request->getParam(FirmDasar.Param_WiFiPass)->value().c_str();
-    // ESP.restart();
-    Serial.println(String(FirmDasar.urlFS));
-    Serial.println(String(FirmDasar.urlFirm));
-    Serial.println(String(FirmDasar.ssid));
-    Serial.println(String(FirmDasar.pass));
+    FirmDasar.urlFS = request->getParam("UrlFS")->value().c_str();
+    FirmDasar.urlFirm = request->getParam("UrlFirm")->value().c_str();
+    FirmDasar.ssid = request->getParam("WiFiSSID")->value().c_str();
+    FirmDasar.pass = request->getParam("WiFiPass")->value().c_str();
+    
+    // Serial.println(String(FirmDasar.urlFS));
+    // Serial.println(String(FirmDasar.urlFirm));
+    // Serial.println(String(FirmDasar.ssid));
+    // Serial.println(String(FirmDasar.pass));
     message = " Credentials received by ESP board!!! ";
     request->send(200, "text/plain", message); });
     server.onNotFound(notFound);

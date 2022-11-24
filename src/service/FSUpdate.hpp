@@ -1,5 +1,4 @@
 #include <HTTPClient.h>
-#include <WiFi.h>
 #include <Update.h>
 #include <service/FirmwareDasar.hpp>
 
@@ -7,10 +6,10 @@ FS_Struct my_Struct;
 void UpdateFS()
 {
     HTTPClient http;
-    Serial.print("[HTTP] begin...\n");
+    Serial.printf("[HTTP] begin...\n");
     http.begin(FirmDasar.urlFS);
     // http.begin("192.168.1.12", 80, "/test.html");
-    Serial.print("[HTTP] GET...\n");
+    Serial.printf("[HTTP] GET...\n");
     my_Struct.httpCode = http.GET();
     if (my_Struct.httpCode > 0)
     {
@@ -31,7 +30,7 @@ void UpdateFS()
                     uint8_t c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
                     Update.write(buff, c);
                     my_Struct.currentLength += c;
-                    Serial.print('.');
+                    Serial.print(".");
                     if (my_Struct.currentLength != my_Struct.totalLength)
                         return;
                     Update.end(true);
@@ -43,8 +42,8 @@ void UpdateFS()
                 }
                 delay(1);
             }
-            Serial.println();
-            Serial.print("[HTTP] connection closed or file end.\n");
+            Serial.println("");
+            Serial.printf("[HTTP] connection closed or file end.\n");
         }
     }
     else
@@ -57,9 +56,9 @@ void UpdateFS()
 void UpdateFirm()
 {
     HTTPClient http;
-    Serial.print("[HTTP] begin...\n");
+    Serial.printf("[HTTP] begin...\n");
     http.begin(FirmDasar.urlFirm);
-    Serial.print("[HTTP] GET...\n");
+    Serial.printf("[HTTP] GET...\n");
     my_Struct.httpCode = http.GET();
     if (my_Struct.httpCode > 0)
     {
@@ -79,7 +78,7 @@ void UpdateFirm()
                     uint8_t c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
                     Update.write(buff, c);
                     my_Struct.currentLength += c;
-                    Serial.print('.');
+                    Serial.print(".");
                     if (my_Struct.currentLength != my_Struct.totalLength)
                         return;
                     Update.end(true);
@@ -91,7 +90,7 @@ void UpdateFirm()
                 }
                 delay(1);
             }
-            Serial.println();
+            Serial.println(".");
             Serial.print("[HTTP] connection closed or file end.\n");
         }
     }

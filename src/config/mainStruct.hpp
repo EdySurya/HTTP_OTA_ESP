@@ -17,10 +17,6 @@ typedef struct
     const char *urlFirm;
     const char *urlFS;
     const char *urlUpdate;
-    const char *Param_UrlFS = "UrlFS";
-    const char *Param_UrlFirm = "UrlFirm";
-    const char *Param_WiFiSSID = "WiFiSSID";
-    const char *Param_WiFiPass = "WiFiPass";
     const char *ssid;
     const char *pass;
     const char *MacAddr;

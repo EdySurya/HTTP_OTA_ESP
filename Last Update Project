@@ -1,7 +1,8 @@
 Problem update partisi spiffs pada "custom_partition.csv" dengan problem :
     -> "WARNING: Partition spiffs not aligned to 0x1000.This is deprecated and will be considered an error in the future release."
+    -> ERROR di atas mewajibkan pembagian partisi app dan data jika d jumlahkan haru 4MB (4157440 Byte)
 
 next Job fix Bug partisi 
     -> buat partisi ulang dengan binary sebagai acuan dalam membagi memori
-    -> Partisi SPIFFS wajib kelipatan 0x1000 / 4096
+    -> Partisi SPIFFS wajib kelipatan 0x1000(4096)
     -> ofset awal type app 0x10000

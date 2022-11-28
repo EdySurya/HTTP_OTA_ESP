@@ -1,81 +1,107 @@
-#include <service/FSUpdate.hpp>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#include <WiFiClientSecure.h>
 
-// const char *urlJson = "https://raw.githubusercontent.com/EdySurya/HTTP_OTA_ESP/LittleFS/data/CurrentVersion.json";
+#include <service/FSUpdate.hpp>
+#include <config/mainStruct.hpp>
+
+baseFirmwareStruct gBaseFirmwareStruct;
+
+#include <repository/eepromLoader.hpp>
+
+// SKETCH BEGIN
 
 void setup()
 {
   Serial.begin(115200);
-  WiFi.mode(WIFI_AP);
-  // Serial.println(WiFi.macAddress());
-  const char *MacAddr = WiFi.macAddress().c_str();
-  const char *MacPass = "12345678";
-  WiFi.softAP(MacAddr, MacPass);
-  Serial.printf("Connecting to WiFi ..");
-  Serial.println(WiFi.softAPIP());
-  initLittleFS();
-  serverHandle();
+  delay(100);
+
+  // dummyEeprom(false);
+  
+  // delay(100000000);
+
+  eepromLoader();
+
+  Serial.printf("state: %d", gBaseFirmwareStruct.state);
+
+  if (gBaseFirmwareStruct.state)
+  {
+    gBaseFirmwareStruct.state = false; // change EEPROM OTA state to false
+    eepromCommit(false);
+
+    delay(3000);
+    firmwareUpdate(gBaseFirmwareStruct.ssid,
+                   gBaseFirmwareStruct.pass,
+                   gBaseFirmwareStruct.firmwareUrl,
+                   gBaseFirmwareStruct.fsUrl);
+  }
 }
 
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include "SPIFFS.h"
+
+AsyncWebServer server(80);
+AsyncEventSource events("/events");
+
+IPAddress local_IP(192, 168, 1, 1);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
 void loop()
 {
-  if (WiFi.status() != WL_CONNECTED)
+  if (!SPIFFS.begin(true))
   {
-    if (FirmDasar.ssid != NULL && FirmDasar.pass != NULL)
-    {
-      WiFi.softAPdisconnect();
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(FirmDasar.ssid, FirmDasar.pass);
-      Serial.println("Connecting to WiFi..");
-      while (WiFi.status() != WL_CONNECTED)
-      {
-        Serial.print(".");
-        delay(250);
-      }
-      Serial.println("Connected to the WiFi network");
-    }
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
   }
-  if (WiFi.status() == WL_CONNECTED)
+  Serial.setDebugOutput(true);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(local_IP, gateway, subnet);
+  const char *ssid = WiFi.macAddress().c_str();
+  const char *pass = "Digitels123456";
+  WiFi.softAP(ssid, pass);
+
+  events.onConnect([](AsyncEventSourceClient *client)
+                   { client->send("hello!", NULL, millis(), 1000); });
+  server.addHandler(&events);
+
+  server.on("/", [](AsyncWebServerRequest *request)
+            { 
+              AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html", "", false);
+              request->send(response); });
+  server.on("/style.css", [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/style.css", "text/css"); });
+  server.on("/script.js", [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/script.js", "text/js"); });
+  server.on("/submit", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String message;
+
+              sprintf(gBaseFirmwareStruct.fsUrl , request->getParam("UrlFS")->value().c_str());
+              sprintf(gBaseFirmwareStruct.firmwareUrl , request->getParam("UrlFirm")->value().c_str());
+              sprintf(gBaseFirmwareStruct.ssid , request->getParam("WiFiSSID")->value().c_str());
+              sprintf(gBaseFirmwareStruct.pass , request->getParam("WiFiPass")->value().c_str());
+              Serial.println(gBaseFirmwareStruct.firmwareUrl);
+              Serial.println(gBaseFirmwareStruct.fsUrl);
+              Serial.println(gBaseFirmwareStruct.ssid);
+              Serial.println(gBaseFirmwareStruct.pass);
+              
+              message = " Credentials received by ESP board!!! ";
+              request->send(200, "text/plain", message);
+              
+              if ((strcmp(gBaseFirmwareStruct.fsUrl,       "#") != 0) ||\
+                  (strcmp(gBaseFirmwareStruct.firmwareUrl, "#") != 0) ||\
+                  (strcmp(gBaseFirmwareStruct.ssid,        "#") != 0) ||\
+                  (strcmp(gBaseFirmwareStruct.pass,        "#") != 0))
+              {
+                gBaseFirmwareStruct.state = true;
+                // commit EEPROM then restart
+                eepromCommit(true);
+              } });
+  server.begin();
+
+  while (1)
   {
-    if (FirmDasar.urlFS != "" && FirmDasar.urlFirm != "")
-    {
-      UpdateFS();
-      UpdateFirm();
-    }
-    // HTTPClient http;
-    // Serial.print("[HTTP] begin...\n");
-    // // configure server and url
-    // http.useHTTP10(true);
-    // http.begin(urlJson);
-    // // start connection and send HTTP header
-    // my_Struct.httpCode = http.GET();
-    // if (my_Struct.httpCode > 0)
-    // {
-    //   Serial.printf("[HTTP] GET... code: %d\n", my_Struct.httpCode);
-    // deserializeJson(doc, http.getStream());
-    // Serial.print("FS Version : ");
-    // Serial.println(doc["FSVers"].as<String>());
-    // Serial.print("Firmware Version : ");
-    // Serial.println(doc["FirmVers"].as<String>());
-    // Serial.println("Firmware Current Version :" + String(my_Struct.currentFirmVers));
-    // Serial.println("FS Current Version :" + String(my_Struct.currentFSVers));
-    // if (doc["FSVers"].as<String>() != my_Struct.currentFSVers)
-    // {
-    //   my_Struct.currentFSVers = doc["FSVers"].as<String>();
-    //   Serial.println("Memulai Update Versi baru dari Little FS");
-    //   UpdateFS();
-    // }
-    // else if (doc["FirmVers"].as<String>() != my_Struct.currentFirmVers)
-    // {
-    //   my_Struct.currentFirmVers = doc["FirmVers"].as<String>();
-    //   Serial.println("Memulai Update Versi baru Firmware");
-    //   UpdateFirm();
-    // }
-    // readFile("/CurrentVersion.json", "r");
-    // }
-    // else
-    // {
-    //   Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(my_Struct.httpCode).c_str());
-    // }
-    // http.end();
   }
 }

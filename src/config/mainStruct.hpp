@@ -1,26 +1,8 @@
-#include <Arduino.h>
-#include <ArduinoJson.h>
-
 typedef struct
 {
-    /* data */
-    uint32_t currentLength = 0;
-    uint32_t totalLength;
-    String currentFSVers = "0.1";
-    String currentFirmVers = "0.1";
-    uint8_t httpCode;
-    uint32_t len;
-} FS_Struct;
-
-typedef struct
-{
-    const char *urlFirm;
-    const char *urlFS;
-    const char *urlUpdate;
-    const char *ssid;
-    const char *pass;
-    const char *MacAddr;
-} Firm_Dasar_Struct;
-
-DynamicJsonDocument doc(64);
-DynamicJsonDocument docVer(64);
+    char firmwareUrl[128];
+    char fsUrl[128];
+    char ssid[32];
+    char pass[32];
+    bool state = false;
+} baseFirmwareStruct;
